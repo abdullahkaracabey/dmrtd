@@ -31,9 +31,10 @@ class MRZ {
   late String _docNum;
   late String _optData;
   String? _optData2;
-  late String rawContent;
 
-  MRZ(Uint8List encodedMRZ) {
+  final Uint8List _encoded;
+
+  MRZ(Uint8List encodedMRZ) : _encoded = encodedMRZ {
     _parse(encodedMRZ);
   }
 
@@ -110,8 +111,6 @@ class MRZ {
     } else {
       throw MRZParseError("Invalid MRZ data");
     }
-    istream.reset();
-    rawContent = _read(istream, data.length);
   }
 
   void _parseTD1(InputStream istream) {
@@ -242,6 +241,20 @@ class MRZ {
 
     _assertCheckDigit(
         _docNum, cdDocNum, "Document Number check digit mismatch");
+  }
+
+  Uint8List toBytes() {
+    return _encoded;
+  }
+
+  String toEncodedString() {
+    var data = toBytes();
+    final istream = InputStream(data);
+    var result = _read(istream, data.length);
+
+    istream.reset();
+
+    return result;
   }
 
   static String _read(InputStream istream, int maxLength) {
